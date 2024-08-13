@@ -7,13 +7,13 @@ pub struct PaddlePlugin;
 #[derive(Bundle)]
 struct PaddleBundle<M> where M: Material2d {
     sprite: MaterialMesh2dBundle<M>,
-    velocity: PaddleVelocity,
+    speed: PaddleSpeed,
     direction: Direction,
     side: Side,
 }
 
 #[derive(Component)]
-pub struct PaddleVelocity(f32);
+pub struct PaddleSpeed(f32);
 
 #[derive(Component)]
 pub struct Direction(f32); // 1.0 or -1.0 to indicate direction of velocity
@@ -33,6 +33,7 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
     commands.spawn(Camera2dBundle::default());
 
     if let Ok(window) = window.get_single() {
+        // Calculating where to place the paddles
         let width = window.resolution.width();
         let padding = 100.0;
         let left_off = (-width / 2.0) + padding;
@@ -46,7 +47,7 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
                 material: materials.add(Color::from(WHITE)),
                 ..default()
             },
-            velocity: PaddleVelocity(0.0),
+            speed: PaddleSpeed(5.0), // Base speed is 10.0
             direction: Direction(0.0),
             side: Side("left".to_string()),
         });
@@ -59,7 +60,7 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
                 material: materials.add(Color::from(WHITE)),
                 ..default()
             },
-            velocity: PaddleVelocity(0.0),
+            speed: PaddleSpeed(5.0),
             direction: Direction(0.0),
             side: Side("right".to_string()),
         });
@@ -67,36 +68,39 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
 }
 
 // Querying entities that have the specific attributes (essentially the paddles)
-pub fn handle_keys(mut query: Query<(&mut Transform, &Mesh2dHandle, &mut PaddleVelocity, &mut Direction, &Side)>, keys: Res<ButtonInput<KeyCode>>) {
-    for (mut transform, _sprite, mut _velocity, mut direction, side) in &mut query {
-        // Setting the direction of velocity based on the key being down
-        match side.0.as_str() {
-            "left" => { // the left paddle
-                    if keys.pressed(KeyCode::KeyW) {
-                            *direction = Direction(1.0);
-                    }
-                    else if keys.pressed(KeyCode::KeyS) {
-                        *direction = Direction(-1.0);
-                    }
-                    else {
-                        *direction = Direction(0.0);
-                    }
-                },
-            "right" => { // the right paddle
-                    if keys.pressed(KeyCode::ArrowUp) {
-                        *direction = Direction(1.0);
-                    }
-                    else if keys.pressed(KeyCode::ArrowDown) {
-                        *direction = Direction(-1.0);
-                    }
-                    else {
-                        *direction = Direction(0.0);
-                    }
-                },
-            _ => {}, // do nothing, wildcard can never occur anyway
+pub fn handle_keys(mut query: Query<(&mut Transform, &Mesh2dHandle, &mut PaddleSpeed, &mut Direction, &Side)>, keys: Res<ButtonInput<KeyCode>>) {
+    for (mut transform, _sprite, mut speed, mut direction, side) in &mut query {
+        // If none of the paddle movement keys are pressed then just return
+        if !(keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowUp) || keys.pressed(KeyCode::ArrowDown)) {
+            // reset speed to base (momentum lost without key press) and return
+            speed.0 = 5.0;
+            continue;
         }
-        
-        // Applying the velocity TODO: MAKE THE VELOCITY ACCELERATE AND DECELERATE
-        transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (1.0 * direction.0), transform.translation.z);
+
+        // Setting the direction of velocity based on the key being down
+        if side.0 == "left".to_string() {
+                if keys.pressed(KeyCode::KeyW) {
+                    *direction = Direction(1.0);
+                    transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
+                    speed.0 += 0.06;
+                }
+                else if keys.pressed(KeyCode::KeyS) {
+                    *direction = Direction(-1.0);
+                    transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
+                    speed.0 += 0.06;
+                }
+        }
+        else if side.0 == "right".to_string() {
+                if keys.pressed(KeyCode::ArrowUp) {
+                    *direction = Direction(1.0);
+                    transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
+                    speed.0 += 0.06;
+                }
+                else if keys.pressed(KeyCode::ArrowDown) {
+                    *direction = Direction(-1.0);
+                    transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
+                    speed.0 += 0.06;
+                }
+        }
     }
 }
