@@ -21,6 +21,10 @@ pub struct Direction(f32); // 1.0 or -1.0 to indicate direction of velocity
 #[derive(Component)]
 pub struct Side(String);
 
+// Definitions for values
+static ACCEL: f32 = 0.2;
+static BASE_SPEED: f32 = 10.0;
+
 impl Plugin for PaddlePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, add_rectangle);
@@ -47,7 +51,7 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
                 material: materials.add(Color::from(WHITE)),
                 ..default()
             },
-            speed: PaddleSpeed(5.0), // Base speed is 10.0
+            speed: PaddleSpeed(BASE_SPEED), // Base speed is 10.0
             direction: Direction(0.0),
             side: Side("left".to_string()),
         });
@@ -60,7 +64,7 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
                 material: materials.add(Color::from(WHITE)),
                 ..default()
             },
-            speed: PaddleSpeed(5.0),
+            speed: PaddleSpeed(BASE_SPEED),
             direction: Direction(0.0),
             side: Side("right".to_string()),
         });
@@ -73,34 +77,37 @@ pub fn handle_keys(mut query: Query<(&mut Transform, &Mesh2dHandle, &mut PaddleS
         // If none of the paddle movement keys are pressed then just return
         if !(keys.pressed(KeyCode::KeyW) || keys.pressed(KeyCode::KeyS) || keys.pressed(KeyCode::ArrowUp) || keys.pressed(KeyCode::ArrowDown)) {
             // reset speed to base (momentum lost without key press) and return
-            speed.0 = 5.0;
+            speed.0 = BASE_SPEED;
             continue;
         }
 
         // Setting the direction of velocity based on the key being down
-        if side.0 == "left".to_string() {
+        match side.0.as_str() {
+            "left" => {
                 if keys.pressed(KeyCode::KeyW) {
                     *direction = Direction(1.0);
                     transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
-                    speed.0 += 0.06;
+                    speed.0 += ACCEL;
                 }
                 else if keys.pressed(KeyCode::KeyS) {
                     *direction = Direction(-1.0);
                     transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
-                    speed.0 += 0.06;
+                    speed.0 += ACCEL;
                 }
-        }
-        else if side.0 == "right".to_string() {
+            }
+            "right" => {
                 if keys.pressed(KeyCode::ArrowUp) {
                     *direction = Direction(1.0);
                     transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
-                    speed.0 += 0.06;
+                    speed.0 += ACCEL;
                 }
                 else if keys.pressed(KeyCode::ArrowDown) {
                     *direction = Direction(-1.0);
                     transform.translation = Vec3::new(transform.translation.x, transform.translation.y + (speed.0 * direction.0), transform.translation.z);
-                    speed.0 += 0.06;
+                speed.0 += ACCEL;
                 }
+            }
+            _ => {} // wildcard arm will never happen
         }
     }
 }
