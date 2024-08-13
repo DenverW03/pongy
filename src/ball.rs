@@ -14,12 +14,6 @@ pub struct BallPlugin;
 #[derive(Component)]
 pub struct Ball;
 
-#[derive(Component)]
-pub struct BallVelocity {
-    x: f32,
-    y: f32,
-}
-
 impl Plugin for BallPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, add_ball);
@@ -29,7 +23,7 @@ impl Plugin for BallPlugin {
 
 pub fn add_ball(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<ColorMaterial>>) {
    commands.spawn((
-        LinearVelocity(Vector{ x: 1.0, y: 0.5 }),
+        LinearVelocity(Vector{ x: 1.0, y: 0.0 }),
         RigidBody::Dynamic,
         Collider::circle(10.0),
         MaterialMesh2dBundle {
@@ -42,15 +36,6 @@ pub fn add_ball(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut ma
     ));
 }
 
-//pub fn setup_ball(mut query: Query<&mut LinearVelocity, With<Ball>>) {
-//    for mut linear_velocity in &mut query {
-//        println!("found ball");
-//        // Setting the default velocity values
-//        linear_velocity.x = 1.0;
-//        linear_velocity.y = 0.5;
-//    }
-//}
-
 pub fn movement(mut query: Query<(&LinearVelocity, &mut Transform, &Ball)>) {
     for (linear_velocity, mut transform, _ball) in &mut query {
         println!("{}", linear_velocity.x);
@@ -60,9 +45,3 @@ pub fn movement(mut query: Query<(&LinearVelocity, &mut Transform, &Ball)>) {
         transform.translation = Vec3::new(transform.translation.x + linear_velocity.x, transform.translation.y + linear_velocity.y, transform.translation.z);
     }
 }
-
-//pub fn movement(mut query: Query<(&mut Transform, &BallVelocity)>) {
-//    for (mut transform, velocity) in &mut query {
-//        transform.translation = Vec3::new(transform.translation.x + velocity.x, transform.translation.y + velocity.y, transform.translation.z);
-//    }
-//}
