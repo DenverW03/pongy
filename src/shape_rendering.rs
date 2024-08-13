@@ -46,40 +46,22 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
 
         // Adding the left paddle
         commands.spawn((
-            //RigidBody::Kinematic,
-            //Collider::rectangle(20.0, 100.0),
-            PaddleBundle {
-                sprite: MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Rectangle::new(1.0, 1.0))),
-                    transform: Transform::from_xyz(left_off, 0.0, 0.0).with_scale(Vec3 { x: 20.0, y: 100.0, z: 0.0 }),
-                    material: materials.add(Color::from(WHITE)),
-                    ..default()
-                },
-                speed: PaddleSpeed(BASE_SPEED), // Base speed is 10.0
-                direction: Direction(0.0),
-                side: Side("left".to_string()),
+            RigidBody::Kinematic,
+            Collider::rectangle(20.0, 100.0),
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Rectangle::new(20.0, 100.0))),
+                transform: Transform::from_xyz(left_off, 0.0, 0.0),
+                material: materials.add(Color::from(WHITE)),
+                ..default()
             },
+            PaddleSpeed(BASE_SPEED),
+            Direction(0.0),
+            Side("left".to_string()),
         ));
 
         // Adding the right paddle
-        //commands.spawn((
-        //    RigidBody::Kinematic,
-        //    Collider::rectangle(20.0, 100.0),
-        //    PaddleBundle {
-        //        sprite: MaterialMesh2dBundle {
-        //            mesh: Mesh2dHandle(meshes.add(Rectangle::new(1.0, 1.0))),
-        //            transform: Transform::from_xyz(right_off, 0.0, 0.0).with_scale(Vec3 { x: 20.0, y: 100.0, z: 0.0 }),
-        //            material: materials.add(Color::from(WHITE)),
-        //            ..default()
-        //        },
-        //        speed: PaddleSpeed(BASE_SPEED),
-        //        direction: Direction(0.0),
-        //        side: Side("right".to_string()),
-        //    },
-        //));
-
         commands.spawn((
-            RigidBody::Static,
+            RigidBody::Kinematic,
             Collider::rectangle(20.0, 100.0),
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Rectangle::new(20.0, 100.0))),
@@ -87,6 +69,9 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
                 material: materials.add(Color::from(WHITE)),
                 ..default()
             },
+            PaddleSpeed(BASE_SPEED),
+            Direction(0.0),
+            Side("right".to_string()),
         ));
 
     }
