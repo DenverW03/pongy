@@ -1,11 +1,12 @@
 use bevy::{
     color::palettes::basic::WHITE, prelude::*, sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle}
 };
+use avian2d::prelude::*;
 
 pub struct PaddlePlugin;
 
 #[derive(Bundle)]
-struct PaddleBundle<M> where M: Material2d {
+pub struct PaddleBundle<M> where M: Material2d {
     sprite: MaterialMesh2dBundle<M>,
     speed: PaddleSpeed,
     direction: Direction,
@@ -44,7 +45,7 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
         let right_off = (width / 2.0) - padding;
 
         // Adding the left paddle
-        commands.spawn(PaddleBundle {
+        commands.spawn((PaddleBundle {
             sprite: MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Rectangle::new(1.0, 1.0))),
                 transform: Transform::from_xyz(left_off, 0.0, 0.0).with_scale(Vec3 { x: 20.0, y: 100.0, z: 0.0 }),
@@ -54,10 +55,12 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
             speed: PaddleSpeed(BASE_SPEED), // Base speed is 10.0
             direction: Direction(0.0),
             side: Side("left".to_string()),
-        });
+        },
+        //RigidBody::Kinematic,
+        ));
 
         // Adding the right paddle
-        commands.spawn(PaddleBundle {
+        commands.spawn((PaddleBundle {
             sprite: MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Rectangle::new(1.0, 1.0))),
                 transform: Transform::from_xyz(right_off, 0.0, 0.0).with_scale(Vec3 { x: 20.0, y: 100.0, z: 0.0 }),
@@ -67,7 +70,9 @@ pub fn add_rectangle(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, m
             speed: PaddleSpeed(BASE_SPEED),
             direction: Direction(0.0),
             side: Side("right".to_string()),
-        });
+        },
+        //RigidBody::Kinematic,
+        ));
     }
 }
 
