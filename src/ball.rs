@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::basic::WHITE, prelude::*, sprite::{Material2d, MaterialMesh2dBundle, Mesh2dHandle}
+    color::palettes::basic::WHITE, prelude::*, sprite::MaterialMesh2dBundle
 };
 use avian2d::{math::Vector, prelude::*};
 
@@ -17,7 +17,7 @@ impl Plugin for BallPlugin {
 
 pub fn add_ball(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<ColorMaterial>>) {
    commands.spawn((
-        LinearVelocity(Vector{ x: 1.0, y: 0.0 }),
+        LinearVelocity(Vector{ x: 1.0, y: -1.0 }),
         RigidBody::Dynamic,
         Collider::circle(10.0),
         MaterialMesh2dBundle {
@@ -36,9 +36,11 @@ pub fn movement(mut query: Query<(&LinearVelocity, &mut Transform, &Ball)>) {
     }
 }
 
-// TODO: MAKE THE ACCELERATION ACCOUNT FOR THE CURRENT VECTOR, ACCELERATE LINEARLY
 pub fn accelerate(mut query: Query<&mut LinearVelocity, With<Ball>>) {
     for mut linear_velocity in &mut query {
+        println!("linear_velocity: {}, {}", linear_velocity.x, linear_velocity.y);
+
+
         // Calculate the magnitude of the velocity vector
         let mag: f32 = ((linear_velocity.x * linear_velocity.x) + (linear_velocity.y * linear_velocity.y)).sqrt();
 
@@ -47,21 +49,13 @@ pub fn accelerate(mut query: Query<&mut LinearVelocity, With<Ball>>) {
 
         // New speed increments
         let speed_inc: f32 = 0.1;
-        let incx: f32 = speed_inc * f32::cos(angle);
-        let incy: f32 = speed_inc  * f32::sin(angle);
+        let incx: f32 = (speed_inc * f32::cos(angle)) * (linear_velocity.x / linear_velocity.x.abs());
+        let incy: f32 = (speed_inc  * f32::sin(angle)) * (linear_velocity.y / linear_velocity.y.abs());
+
+        println!("new speed increments: {}, {}", incx, incy);
 
         // Add new speed increments
         linear_velocity.x += incx;
         linear_velocity.y += incy;
     }
 }
-
-//pub fn handle_collision(collisions: Res<Collisions>, mut query: Query<&mut LinearVelocity, With<Ball>>) {
-//    // This loop will only occur once as there is only one ball
-//    for mut linear_velocity in &mut query {
-//        for _contacts in collisions.iter() {
-//            linear_velocity.x *= 2.0;
-//            linear_velocity.y *= 2.0;
-//        }
-//    }
-//}
