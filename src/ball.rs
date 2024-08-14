@@ -39,10 +39,18 @@ pub fn movement(mut query: Query<(&LinearVelocity, &mut Transform, &Ball)>) {
 // TODO: MAKE THE ACCELERATION ACCOUNT FOR THE CURRENT VECTOR, ACCELERATE LINEARLY
 pub fn accelerate(mut query: Query<&mut LinearVelocity, With<Ball>>) {
     for mut linear_velocity in &mut query {
-        // Inline condiitonals to account for direction
-        let incx = if linear_velocity.x > 0.0 {0.1} else {-0.1};
-        let incy = if linear_velocity.y > 0.0 {0.1} else {-0.1};
+        // Calculate the magnitude of the velocity vector
+        let mag: f32 = ((linear_velocity.x * linear_velocity.x) + (linear_velocity.y * linear_velocity.y)).sqrt();
 
+        // Calculate the angle from the velocity vector magnitude
+        let angle: f32 = f32::acos(linear_velocity.x / mag);
+
+        // New speed increments
+        let speed_inc: f32 = 0.1;
+        let incx: f32 = speed_inc * f32::cos(angle);
+        let incy: f32 = speed_inc  * f32::sin(angle);
+
+        // Add new speed increments
         linear_velocity.x += incx;
         linear_velocity.y += incy;
     }
